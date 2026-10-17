@@ -201,10 +201,19 @@ export default function WebUpscaler() {
   const fileInput = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
-  useEffect(() => () => {
-    if (picked?.url) URL.revokeObjectURL(picked.url);
-    if (resultUrl) URL.revokeObjectURL(resultUrl);
-  }, [picked?.url, resultUrl]);
+  useEffect(() => {
+    const url = picked?.url;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [picked?.url]);
+
+  useEffect(() => {
+    const url = resultUrl;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [resultUrl]);
 
   const chooseFile = (file?: File) => {
     if (!file) return;
