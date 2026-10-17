@@ -6,11 +6,17 @@ const useSystemInfo = () => {
   > | null>(null);
 
   useEffect(() => {
+    const electronApi = typeof window !== "undefined" ? (window as any).electron : undefined;
+    if (!electronApi?.getSystemInfo) return;
     const getSystemInfo = async () => {
-      const systemInfo = await window.electron.getSystemInfo();
-      setSystemInfo(systemInfo);
+      try {
+        const info = await electronApi.getSystemInfo();
+        setSystemInfo(info);
+      } catch (error) {
+        console.warn("Unable to read desktop system information:", error);
+      }
     };
-    getSystemInfo();
+    void getSystemInfo();
   }, []);
   return { systemInfo };
 };
