@@ -23,6 +23,7 @@ import { ImageFormat, VALID_IMAGE_FORMATS } from "@/lib/valid-formats";
 import { initCustomModels } from "@/components/hooks/use-custom-models";
 import { OnboardingDialog } from "@/components/main-content/onboarding-dialog";
 import useSystemInfo from "@/components/hooks/use-system-info";
+import WebUpscaler from "@/components/web-upscaler";
 
 const Home = () => {
   const t = useAtomValue(translationAtom);
@@ -33,6 +34,7 @@ const Home = () => {
   initCustomModels();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [runtimeMode, setRuntimeMode] = useState<"checking" | "desktop" | "web">("checking");
   const [imagePath, setImagePath] = useState("");
   const [upscaledImagePath, setUpscaledImagePath] = useState("");
   const [dimensions, setDimensions] = useState({
@@ -102,6 +104,7 @@ const Home = () => {
 
   // ELECTRON EVENT LISTENERS
   useEffect(() => {
+    if (typeof window === "undefined" || !(window as any).electron) return;
     const handleErrors = (data: string) => {
       if (data.includes("Invalid GPU")) {
         toast({
@@ -303,6 +306,8 @@ const Home = () => {
 
   // LOADING STATE
   useEffect(() => {
+    const electronAvailable = typeof window !== "undefined" && Boolean((window as any).electron);
+    setRuntimeMode(electronAvailable ? "desktop" : "web");
     setIsLoading(false);
   }, []);
 
@@ -325,11 +330,13 @@ const Home = () => {
     setUpscaledBatchFolderPath("");
   };
 
-  if (isLoading) {
+  if (isLoading || runtimeMode === "checking") {
     return (
       <UpscaylSVGLogo className="absolute left-1/2 top-1/2 w-36 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
     );
   }
+
+  if (runtimeMode === "web") return <WebUpscaler />;
 
   return (
     <div
