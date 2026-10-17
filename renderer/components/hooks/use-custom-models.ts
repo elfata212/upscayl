@@ -6,11 +6,16 @@ export const initCustomModels = () => {
   const logit = useLogger();
 
   useEffect(() => {
-    const customModelsPath = JSON.parse(
-      localStorage.getItem("customModelsPath"),
-    );
+    const electronApi = typeof window !== "undefined" ? (window as any).electron : undefined;
+    if (!electronApi?.send) return;
+    let customModelsPath: unknown = null;
+    try {
+      customModelsPath = JSON.parse(localStorage.getItem("customModelsPath") ?? "null");
+    } catch {
+      customModelsPath = null;
+    }
     if (customModelsPath !== null) {
-      window.electron.send(ELECTRON_COMMANDS.GET_MODELS_LIST, customModelsPath);
+      electronApi.send(ELECTRON_COMMANDS.GET_MODELS_LIST, customModelsPath);
       logit("🎯 GET_MODELS_LIST: ", customModelsPath);
     }
   }, []);
