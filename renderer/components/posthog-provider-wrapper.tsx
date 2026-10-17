@@ -12,6 +12,8 @@ const PostHogProviderWrapper = ({
   const enableContribution = useAtomValue(enableContributionAtom);
 
   useEffect(() => {
+    // This provider belongs to the Electron desktop app; the browser build has no Electron bridge.
+    if (typeof window === "undefined" || !(window as any).electron) return;
     posthog.init("phc_QMcmlmComdofjfaRPzoN4KV9ziV2KgOwAOVyu4J3dIc", {
       api_host: "https://us.i.posthog.com",
       person_profiles: "always",
